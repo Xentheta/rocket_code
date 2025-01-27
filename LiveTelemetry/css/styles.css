@@ -1,0 +1,13 @@
+@charset "utf-8";
+
+body {
+	
+	font-family: "Helvetica";
+}
+
+#map {
+	
+	width: 50%;
+	height: 400px;
+	
+}
