@@ -33,7 +33,12 @@ const app = http.createServer((req, res) => {
 });
 
 // Set up socket.io for real-time communication
-const io = socketIo(app);
+const io = socketIo(app, {
+  cors: {
+    origin: "*", // Allow all origins
+    methods: ["GET", "POST"]
+  }
+});
 
 // Variables to store latitude and longitude
 let latitude = null;
