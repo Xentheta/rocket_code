@@ -14,8 +14,8 @@ float humidity1, temperature1, altitude1, pressure1;
 
 void setup() {
   Serial.begin(115200);
-  Wire.begin();
-  if (atmoSensor1.beginI2C(Wire))
+  Wire.begin(21, 22);
+  if (atmoSensor1.beginI2C(Wire) == false)
   {
     Serial.println("Sensor is not responding.");
     while(1);
@@ -27,18 +27,48 @@ void loop() {
   temperature1 = atmoSensor1.readTempF();
   pressure1 = atmoSensor1.readFloatPressure();
   altitude1 = atmoSensor1.readFloatAltitudeFeet();
-  Serial.print("Humidity: ");
+  Serial.println("Humidity: ");
   Serial.print(humidity1, 3);
   delay(100);
-  Serial.print("Temperature: ");
+  Serial.println("Temperature: ");
   Serial.print(temperature1, 3);
   delay(100);
-  Serial.print("Pressure: ");
+  Serial.println("Pressure: ");
   Serial.print(pressure1, 3);
   delay(100);
-  Serial.print("Altitude: ");
+  Serial.println("Altitude: ");
   Serial.print(altitude1, 3);
-  Serial.println();
   delay(2000);
 } 
+
+/*#include <Wire.h>
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin(21, 22); // Use GPIO 21 (SDA) and GPIO 22 (SCL)
+  Serial.println("Scanning for I2C devices...");
+}
+
+void loop() {
+  byte error, address;
+  int devices = 0;
+
+  for (address = 1; address < 127; address++) {
+    Wire.beginTransmission(address);
+    error = Wire.endTransmission();
+    
+    if (error == 0) {
+      Serial.print("I2C device found at 0x");
+      Serial.println(address, HEX);
+      devices++;
+    }
+  }
+
+  if (devices == 0) {
+    Serial.println("No I2C devices found.");
+  }
+  
+  delay(5000);
+} */
+
 
