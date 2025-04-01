@@ -1,3 +1,5 @@
+#include <SparkFun_MAX1704x_Fuel_Gauge_Arduino_Library.h>
+
  /*
  XIAO ESP32S3 Sense Camera with Microphone Demo
   xiao-camera-mic-demo.ino
@@ -38,6 +40,8 @@ int numFrames = 30 * 5;
 //start boolean
 bool startRecording = false;
 
+File file;
+
 
 int startTime = 0;
 int finishTime = 0;
@@ -72,17 +76,16 @@ void photo_save(const char *fileName) {
  
 // SD card write file
 void writeFile(fs::FS &fs, const char *path, uint8_t *data, size_t len) {
-  File file = fs.open(path, FILE_WRITE);
+  
   if (!file) {
     Serial.println("Failed to open file for writing");
+    Serial.println(file);
     return;
   }
   if (file.write(data, len) == len) {
   } else {
     Serial.println("Write failed");
   }
-
-  file.close();
 }
  
 // Camera Parameters for setup
@@ -108,30 +111,29 @@ void CameraParameters() {
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
-  config.frame_size = FRAMESIZE_UXGA;
+  config.frame_size = FRAMESIZE_CIF;
   config.pixel_format = PIXFORMAT_JPEG;
-  config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
+  config.grab_mode = CAMERA_GRAB_LATEST; //TODO- don't know what this does, seems important
   config.fb_location = CAMERA_FB_IN_PSRAM;
-  config.jpeg_quality = 12;
-  config.fb_count = 1;
+  config.jpeg_quality = 6;
+  config.fb_count = 3;
  
-  // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
-  //                      for larger pre-allocated frame buffer.
+  //if PSRAM IC present, init with UXGA resolution and higher JPEG quality for larger pre-allocated frame buffer.
   if (config.pixel_format == PIXFORMAT_JPEG) {
     if (psramFound()) {
-      config.jpeg_quality = 10;
-      config.fb_count = 0;
+      config.jpeg_quality = 6;
+      config.fb_count = 3;
       config.grab_mode = CAMERA_GRAB_LATEST;
     } else {
       // Limit the frame size when PSRAM is not available
-      config.frame_size = FRAMESIZE_SVGA;
+      config.frame_size = FRAMESIZE_CIF;
       config.fb_location = CAMERA_FB_IN_DRAM;
     }
   } else {
     // Best option for face detection/recognition
     config.frame_size = FRAMESIZE_240X240;
   #if CONFIG_IDF_TARGET_ESP32S3
-      config.fb_count = 0;
+      config.fb_count = 3;
   #endif
   }
  
@@ -191,8 +193,10 @@ void setup() {
   while(!startRecording){
     if(Serial.read() != -1){
       startRecording = true;
+      serialFlush();
     }
   }
+  file = SD.open("/cameraera.based", FILE_APPEND, true);
 }
 
 int cameraState = 0;
@@ -201,10 +205,11 @@ int curFrames = 0;
 char imageFileName[32];
 int totTime = 0;
 int totFinish = 0;
+bool stop = false;
  
 void loop() {
   // Make sure the camera and MicroSD are ready
-  if (camera_status && sd_status && (curFrames <= numFrames)) {
+  if (camera_status && sd_status && !stop) {
     totTime = micros();
     switch(cameraState){
       case 0:
@@ -215,12 +220,17 @@ void loop() {
         fileCount++;
         cameraTimer = millis();
         cameraState++;
+        break;
       case 1:
         if(millis() - cameraTimer >= 0){
           cameraState = 0;
           curFrames++;
 
-          if(curFrames > numFrames){
+          if(Serial.read() != -1){
+            stop = true;
+          }
+
+          if(stop){
             Serial.print("Complete! The average time for sector 0 was: ");
             times[0] = times[0] / curFrames;
             Serial.println(times[0]);
@@ -239,8 +249,11 @@ void loop() {
 
             Serial.print("Photos taken: ");
             Serial.println(curFrames);
+
+            file.close();
           }
         }
+        break;
 
     }
 
@@ -249,3 +262,8 @@ void loop() {
   }
 }
 
+void serialFlush(){
+  while(Serial.available() > 0) {
+    char t = Serial.read();
+  }
+}
