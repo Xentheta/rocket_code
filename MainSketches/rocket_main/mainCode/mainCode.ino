@@ -1,5 +1,5 @@
-#include <SparkFun_MAX1704x_Fuel_Gauge_Arduino_Library.h>
-#include <SparkFun_KX13X.h>
+//#include <SparkFun_MAX1704x_Fuel_Gauge_Arduino_Library.h>
+//#include <SparkFun_KX13X.h>
 #include <sfe_bus.h>
 #include <SparkFun_u-blox_GNSS_v3.h>
 #include <sfe_bus.h>
@@ -10,7 +10,7 @@
 #include <u-blox_structs.h>
 #include <SparkFunBME280.h>
 #include <Wire.h>
-#include "FS.h"
+//#include "FS.h"
 #include "SD.h"
 #include "SPI.h"
 
@@ -24,14 +24,15 @@
 
 BME280 atmoSensor1;
 SFE_UBLOX_GNSS myGNSS;
-SFE_MAX1704X lipo(MAX1704X_MAX17048);
-SparkFun_KX132 kxAccel;
+//SFE_MAX1704X lipo(MAX1704X_MAX17048);
+//SparkFun_KX132 kxAccel;
 
 
 //////// global variables ////////
 
 //floats to be used in getting the data from the first BME sensor
 float humidity1, temperature1, altitude1, pressure1; 
+float humidity2, temperature2, altitude2, pressure2;
 
 //define the pins used for the SPI/SD card interface
 int sck = 18;
@@ -40,7 +41,7 @@ int mosi = 23;
 int cs = 5;
 
 // Struct for the accelerometer's data
-outputData myData; 
+//outputData myData; 
 
 bool gotAllClear = false;
 
@@ -48,7 +49,7 @@ bool gotAllClear = false;
 
 //I2C sensor addresses
 #define BME1_Sensor_Addr = 0x77
-#define BME1_Sensor_Addr = 0x76
+#define BME2_Sensor_Addr = 0x76
 #define GNSS_Sensor_Addr = 0x42
 #define Battery_Monitor_Addr = 0x36 //uses the MAX17048, which hasn't been implemented in code yet
 #define Accel_Sensor_Addr = 0x1F
@@ -85,7 +86,7 @@ void setup() {
   }
   myGNSS.setI2COutput(COM_TYPE_UBX);
 
-  if (lipo.begin() == false) // Connect to the MAX17043 using the default wire port
+  /* if (lipo.begin() == false) // Connect to the MAX17043 using the default wire port
   {
     Serial.println(F("MAX17043 not detected. Please check wiring. Freezing."));
     while (1)
@@ -101,9 +102,9 @@ void setup() {
       ;
   }
   kxAccel.enableAccel(false);
-  kxAccel.setRange(SFE_KX132_RANGE16G); // 16g Range
+  kxAccel.setRange(SFE_KX132_RANGE16G); // 16g Range 
   kxAccel.enableDataEngine(); // Enables the bit that indicates data is ready.
-  kxAccel.enableAccel();
+  kxAccel.enableAccel(); */
 
   //initialize SD card
   SPI.begin(sck, miso, mosi, cs);
@@ -127,7 +128,7 @@ void setup() {
   }
 
   //write headers for .csv files
-  writeFile(SD, "/GNSS.csv", "Latitude, longitude, Altitude, ");
+  /* WriteFile(SD, "/GNSS.csv", "Latitude, longitude, Altitude, ");
   writeFile(SD, "/BNE1.csv", "Humidity, Temp, Pressure, Altitude, ");  
   writeFile(SD, "/BATT.csv", "Voltage, Estimated %, Alert, ");
   writeFile(SD, "/ACCEL.csv", "X Accel, Y Accel, Z Accel, ");
@@ -146,8 +147,8 @@ void setup() {
         }
       }
     }
-  }
-}
+  }*/
+} 
 
 void loop() {
   // getBME1Data(); //Get BME data
@@ -277,7 +278,7 @@ void getAccelData(){
     kxAccel.getAccelData(&myData);
     Serial.print("X: ");
     Serial.print(myData.xData, 4);
-    Serial.print(" Y: ");
+    Serial.print("Y: ");
     Serial.print(myData.yData, 4);
     Serial.print(" Z: ");
     Serial.print(myData.zData, 4);
