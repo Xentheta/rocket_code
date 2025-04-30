@@ -1,13 +1,73 @@
-@charset "utf-8";
+/* Style 2: Minimalist Vertical Layout */
+/* * {
+  border-color: red;
+  border-style: dotted;
+  border-width: 1px;
+} */
 
 body {
-	
-	font-family: "Helvetica";
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #ffffff;
+  color: #333;
 }
 
-#map {
-	
-	width: 50%;
-	height: 400px;
-	
+.app-header {
+  background-color: #343a40;
+  color: white;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  height: 10vh;
+}
+
+.container-t {
+  display: flex;
+  flex-wrap: wrap;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding: 1rem;
+  height: 90vh;
+  justify-content: center;
+}
+
+.map {
+  display: flex;
+  flex: 6 6 auto;
+  height: 100%;
+  width: 35%;
+  border: 2px solid #007bff;
+  border-radius: 8px;
+  align-items: stretch;
+}
+
+.data-section {
+  flex: 1 1 auto;
+  background-color: #f9f9f9;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.cooper {
+  display: flex;
+  height: 100%;
+  width: 35%;
+  border: 2px solid #007bff;
+  border-radius: 8;
+}
+
+.table {
+  margin-bottom: 1rem;
+  background-color: white;
+}
+
+@media (min-width: 768px) {
+  .container {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #map {
+    height: 500px;
+  }
 }
