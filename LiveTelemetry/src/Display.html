@@ -6,16 +6,40 @@
   <title>Socket.io and SerialPort</title>
 	<link rel="stylesheet" href="C:\Users\jonat\Documents\Work\RocketCode\LiveTelemetry\css\styles.css">
   <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
-	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD9w2JYjp9TYHaJczQKGobcthC1Ba0sWNA&callback=initMap&libraries=marker" async defer></script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD399tkU7JKpLlu7mOl8fijGcQ-FEHO6hs&callback=initMap&libraries=marker" async defer></script>
 </head>
 <body>
+	<h1>LiveTelemetree</h1>
   <h1>Location Coordinates</h1>
   <p>Latitude: <span id="latitude">Waiting...</span></p>
   <p>Longitude: <span id="longitude">Waiting...</span></p>
 	
-		<script src="C:\Users\jonat\Documents\Work\RocketCode\LiveTelemetry\scripts\telemetryDisplay.js"></script>
+	<script src="C:\Users\jonat\Documents\IGNITORS\rocket_code\LiveTelemetry\scripts\telemetryDisplay.js"></script>
 	<div id="map"></div>
+	
+	<h1>Altimeter1 Data</h1>
+  	<p>Humidity: <span id="humidity1">Waiting...</span> %</p>
+  	<p>Temperature: <span id="temperature1">Waiting...</span> Fahrenheit</p>
+	<p>Pressure: <span id="pressure1">Waiting...</span> Pascal</p>
+  	<p>Altitude: <span id="altitude1">Waiting...</span> ft</p>
 
+  	<h1>Altimeter2 Data</h1>
+  	<p>Humidity: <span id="humidity2">Waiting...</span> %</p>
+  	<p>Temperature: <span id="temperature2">Waiting...</span> Fahrenheit</p>
+	<p>Pressure: <span id="pressure2">Waiting...</span> Pascal</p>
+  	<p>Altitude: <span id="altitude2">Waiting...</span> ft</p>
+
+    <h1>Accelerometer Data</h1>
+  	<p>Acceleration X: <span id="accelX">Waiting...</span> m/s^2</p>
+  	<p>Acceleration Y: <span id="accelY">Waiting...</span> m/s^2</p>
+	<p>Acceleration Z: <span id="accelZ">Waiting...</span> m/s^2</p>
+  	<p>Total Acceleration: <span id="totalAccel">Waiting...</span> m/s^2</p>
+	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) --> 
+    <script src=".../RocketCode/js/jquery-3.4.1.min.js"></script>
+
+    <!-- Include all compiled plugins (below), or include individual files as needed --> 
+    <script src=".../RocketCode/js/popper.min.js"></script>
+    <script src=".../RocketCode/js/bootstrap-4.4.1.js"></script>
 </body>
 </html>
 
