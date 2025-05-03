@@ -150,12 +150,13 @@ socket.on("accelZ", function (accelerationZ) {
   document.getElementById("accelZ").textContent = currentAccelZ;
   
 });
+socket.on("totalAccel", function (totalAccel) {
+  currentTotalAcc = parseFloat(totalAccel);
+  document.getElementById("totalAccel").textContent = currentTotalAcc;
+});
 
 //calculate total acceleration 
-if ((currentAccelX != null) && (currentAccelY != null) && (currentaccelZ != null)) {
-  totalAccel = Math.sqrt((currentAccelX**2)+(currentAccelY**2)+(currentAccelZ**2))
-  document.getElementById("totalAccel").textContent = totalAccel;
-}
+
     // Handle socket events
     socket.on("connect", () => {
 		console.log("Connected to the server");

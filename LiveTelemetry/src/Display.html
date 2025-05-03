@@ -17,7 +17,7 @@
     <!-- Scripts -->
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
     <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD9w2JYjp9TYHaJczQKGobcthC1Ba0sWNA&callback=initMap&libraries=marker"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD399tkU7JKpLlu7mOl8fijGcQ-FEHO6hs&callback=initMap&libraries=marker"
       async
       defer
     ></script>
@@ -89,19 +89,24 @@
           <tbody>
             <tr>
               <th>X:</th>
-              <td id="x-acc">Waiting...</td>
+              <td id="accelX">Waiting...</td>
               <td id="x-gyro">Waiting...</td>
             </tr>
             <tr>
               <th>Y:</th>
-              <td id="y-acc">Waiting...</td>
+              <td id="accelY">Waiting...</td>
               <td id="y-gyro">Waiting...</td>
             </tr>
             <tr>
               <th>Z:</th>
-              <td id="z-acc">Waiting...</td>
+              <td id="accelZ">Waiting...</td>
               <td id="z-gyro">Waiting...</td>
             </tr>
+			<tr>
+				<th>Total:</th>
+				<td id="totalAccel">Waiting...</td>
+				<td id="z-gyro">Waiting...</td>
+			  </tr>
           </tbody>
         </table>
         <table class="table table-bordered table-sm">
