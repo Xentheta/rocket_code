@@ -128,7 +128,7 @@ void setup() {
   }
 
   //write headers for .csv files
-  /* WriteFile(SD, "/GNSS.csv", "Latitude, longitude, Altitude, ");
+  WriteFile(SD, "/GNSS.csv", "Latitude, longitude, Altitude, ");
   writeFile(SD, "/BNE1.csv", "Humidity, Temp, Pressure, Altitude, ");  
   writeFile(SD, "/BATT.csv", "Voltage, Estimated %, Alert, ");
   writeFile(SD, "/ACCEL.csv", "X Accel, Y Accel, Z Accel, ");
@@ -147,7 +147,7 @@ void setup() {
         }
       }
     }
-  }*/
+  }
 } 
 
 void loop() {
