@@ -52,6 +52,7 @@ float accelX, accelY, accelZ;
 //Gyroscope variables
 float gyroX, gyroY, gyroZ;
 
+
 //definitions for the SPI/SD card interface
 int sck = 18;
 int miso = 19;
