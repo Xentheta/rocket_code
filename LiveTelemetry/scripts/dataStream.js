@@ -61,8 +61,8 @@ let totalAccel = null;
 
 function signedHex(hex, byteLength) {
   const val = parseInt(hex, 16);
-  const max = 1 << (byteLength * 8);
-  const limit = max >> 1;
+  const max = Math.pow(2, byteLength * 8);
+  const limit = max / 2;
   return (val >= limit) ? val - max : val;
 }
 

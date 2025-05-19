@@ -13,7 +13,7 @@ body {
 }
 
 .app-header {
-  background-color: #343a40;
+  background-color: #2b442d;
   color: white;
 
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -28,14 +28,23 @@ body {
   padding: -30px;
 }
 
-.container-t {
+.container-t1 {
   display: flex;
   flex-wrap: wrap;
   grid-template-columns: 1fr;
   gap: 20px;
   padding: 1rem;
-  height: 90vh;
-
+  margin-bottom: 20px;
+  height: 60vh;
+}
+.container-t2 {
+  display: flex;
+  flex-wrap: wrap;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding: 1rem;
+  height: 35vh;
+  justify-content: center;
 }
 
 .map {
@@ -48,7 +57,7 @@ body {
   align-items: stretch;
 }
 
-.data-section {
+.telemetry {
   flex: 1 1 auto;
   background-color: #f9f9f9;
   padding: 1rem;
@@ -85,7 +94,7 @@ body {
 }
 
 .data-maxes {
-  width: 300px;
+  flex: 1 1 auto;
   background-color: #f9f9f9;
   padding: 1rem;
   border-radius: 8px;
@@ -93,9 +102,49 @@ body {
 }
 
 .data-mins {
-  width: 300px;
+  flex: 1 1 auto;
   background-color: #f9f9f9;
   padding: 1rem;
   border-radius: 8px;
   border: 1px solid #ddd;
+}
+.statuses {
+  flex: 1 1 250px;
+  background-color: black;
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+.status-table {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  text-align: right;
+  padding-right: 3rem;
+}
+.statuses span.disconnected {
+  color: red;
+}
+.statuses span.connected {
+  color: lime;
+}
+.mission {
+  flex: 1 1 34%;
+  background-color: black;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  color: white;
+}
+.miss-display {
+  font-size: 20px;
+}
+.mission span.stat-unknown {
+  color: red;
+}
+.mission span.stat-issue {
+  color: yellow;
+}
+.mission span.stat-nominal {
+  color: lime;
 }

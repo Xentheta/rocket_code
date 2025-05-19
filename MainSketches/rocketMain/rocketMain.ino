@@ -22,7 +22,7 @@
 #include <math.h>
 #include "FS.h"
 #include "SD.h"
-#include "SPI.h"
+#include <SPI.h>
 
 // Class definitions
 BME280 atmoSensor1;
@@ -33,7 +33,8 @@ SparkFun_ISM330DHCX myISM;
 
 // Data Structs for IMU and Accelerometer
 outputData myData; 
-sfe_ism_data_t aData;
+// Structs for X,Y,Z data
+sfe_ism_data_t accelData;
 sfe_ism_data_t gyroData;
 
 //////// global variables ////////
@@ -51,7 +52,10 @@ float accelX, accelY, accelZ;
 
 //Gyroscope variables
 float gyroX, gyroY, gyroZ;
-
+float accelXInst = 0, accelYInst = 0, accelZInst = 0;
+float mixedX = 0, mixedY = 0, mixedZ = 0;
+float lastMicros = 0;
+float delta = 0;
 
 //definitions for the SPI/SD card interface
 int sck = 18;
@@ -110,34 +114,43 @@ void setup() {
   kxAccel.enableDataEngine(); // Enables the bit that indicates data is ready.
   kxAccel.enableAccel();
 
-  //Initialize IMU
-  /*while (!myISM.begin())
-	{
-		Serial.println("ISM did not begin. Please check the wiring...");
-		delay(1000);
-	}
-	myISM.deviceReset();
+  // IMU Configuration
+  if( !myISM.begin() ){
+  Serial.println("Did not begin.");
+  while(1);
+  }
 
-	// Wait for it to finish reseting
-	while( !myISM.getDeviceReset() ){ 
-		delay(1);
-	} 
-	
-	myISM.setDeviceConfig();
-	myISM.setBlockDataUpdate();
+  // Reset the device to default settings. This if helpful is you're doing multiple
+  // uploads testing different settings.
+  myISM.deviceReset();
 
+  // Wait for it to finish reseting
+  while( !myISM.getDeviceReset() ){
+  delay(1);
+  }
+
+  Serial.println("Reset.");
+  Serial.println("Applying settings.");
+  delay(100);
+
+  myISM.setDeviceConfig();
+  myISM.setBlockDataUpdate();
+
+  // Set the output data rate and precision of the accelerometer
   myISM.setAccelDataRate(ISM_XL_ODR_104Hz);
-	myISM.setAccelFullScale(ISM_4g); 
+  myISM.setAccelFullScale(ISM_4g);
+
+  // Set the output data rate and precision of the gyroscope
+  myISM.setGyroDataRate(ISM_GY_ODR_104Hz);
+  myISM.setGyroFullScale(ISM_500dps);
+
+  // Turn on the accelerometer's filter and apply settings.
   myISM.setAccelFilterLP2();
-	myISM.setAccelSlopeFilter(ISM_LP_ODR_DIV_100);
+  myISM.setAccelSlopeFilter(ISM_LP_ODR_DIV_100);
 
-	// Set the output data rate and precision of the gyroscope
-	myISM.setGyroDataRate(ISM_GY_ODR_104Hz);
-	myISM.setGyroFullScale(ISM_500dps); 
-
-	// Turn on the gyroscope's filter and apply settings. 
-	myISM.setGyroFilterLP1();
-	myISM.setGyroLP1Bandwidth(ISM_MEDIUM); */
+  // Turn on the gyroscope's filter and apply settings.
+  myISM.setGyroFilterLP1();
+  myISM.setGyroLP1Bandwidth(ISM_MEDIUM);
 
  //////////initialize SD card////////////
   SPI.begin(sck, miso, mosi, cs);
@@ -183,6 +196,7 @@ void setup() {
       }
     }
   }
+  delay(500);
 }
 
 void loop() {
@@ -195,8 +209,7 @@ void loop() {
 
   getAccelData();
 
-  /*getIMUdata();
-  delay(1000); */
+  getIMUdata();
 }
 
 //////////////// Sensor Functions ///////////////////
@@ -431,27 +444,28 @@ void getAccelData(){
 void getIMUdata() {
   char dataBuf [20];
 
-  Serial.print("Hello!!!");
   Serial.println(myISM.checkStatus());
-	if(myISM.checkStatus() ){
-		myISM.getGyro(&gyroData);
-    gyroX = gyroData.xData;
-    gyroY = gyroData.yData;
-    gyroZ = gyroData.zData;
+  if( myISM.checkStatus() ){
+    myISM.getAccel(&accelData);
+    myISM.getGyro(&gyroData);
 
-		Serial.print("RotationX: ");
-		Serial.println(gyroData.xData);
-		Serial.print("RotationY: ");
-		Serial.println(gyroData.yData);
-		Serial.print("RotationZ: ");
-		Serial.println(gyroData.zData);
+    delta = ((micros() - lastMicros) / 1000000.0);
 
-    Serial1.print("RotationX: ");
-		Serial1.println(gyroData.xData);
-		Serial1.print("RotationY: ");
-		Serial1.println(gyroData.yData);
-		Serial1.print("RotationZ: ");
-		Serial1.println(gyroData.zData);
+    gyroX += (((gyroData.xData) / (1000.0)) * delta);
+    accelXInst = atan(accelData.yData / (sqrt(pow(accelData.xData, 2) + pow(accelData.zData, 2)))) * RAD_TO_DEG * delta;
+    mixedX = gyroX * .98 + accelXInst * .02;
+
+    gyroY += (((gyroData.yData) / (1000.0)) * delta);
+    accelYInst = atan(accelData.xData / (sqrt(pow(accelData.yData, 2) + pow(accelData.zData, 2)))) * RAD_TO_DEG * delta;
+    mixedY = gyroY * .98 + accelYInst * .02;
+
+    gyroZ += (((gyroData.zData) / (1000.0)) * delta);
+    accelZInst = atan( (sqrt(pow(accelData.xData, 2) + pow(accelData.yData, 2))) / accelData.zData ) * RAD_TO_DEG * delta;
+    mixedZ = gyroZ * .98 + accelZInst * .02;
+
+
+
+    lastMicros = micros();
 	}
 
   if(logData){

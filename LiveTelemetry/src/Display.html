@@ -60,10 +60,10 @@
 	  </div>
     </header>
 
-    <div class="container-t">
+    <div class="container-t1">
       <div class="map" id="map"></div>
-      <div class="data-section">
-		<h3>Telemetry</h3>
+      <div class="telemetry">
+		    <h3>Telemetry</h3>
         <table class="table table-bordered table-sm mt-3">
           <thead class="thead-light">
             <tr>
@@ -104,10 +104,10 @@
               <td id="accelZ">Waiting...</td>
               <td id="z-gyro">Waiting...</td>
             </tr>
-			<tr>
-				<th>Total:</th>
-				<td id="totalAccel">Waiting...</td>
-			  </tr>
+            <tr>
+              <th>Total:</th>
+              <td id="totalAccel">Waiting...</td>
+			      </tr>
           </tbody>
         </table>
         <table class="table table-bordered table-sm">
@@ -118,7 +118,6 @@
               <th>Altimeter2</th>
             </tr>
           </thead>
-
           <tbody>
             <tr>
               <th>Humidity:</th>
@@ -145,36 +144,75 @@
       </div>
 
       <div class="map" id="imuDisplay"></div>
-	 <div class="data-maxes">
-	 <p>Data Maximums</p>
+    </div>
+    <div class="container-t2">
+	    <div class="data-maxes">
+	      <p>Data Maximums</p>
 		 
-	<table class="table table-bordered table-sm">
+        <table class="table table-bordered table-sm">
           <thead class="thead-light">
             <tr>
               <th>Data</th>
-			  <th>Maximums</th>
+              <th>Maximums</th>
             </tr>
           </thead>
-
           <tbody>
             <tr>
               <th>Apogee:</th>
               <td id="apogee">Waiting...</td>
             </tr>
-			<tr>
+            <tr>
               <th>Acceleration:</th>
               <td id="maxAccZ">Waiting...</td>
             </tr>
           </tbody>
         </table>
-	  <table class="table table-bordered table-sm">
+	      <table class="table table-bordered table-sm">
           <thead class="thead-light">
             <tr>
               <th>Data</th>
-			  <th>Maximums</th>
+			        <th>Maximums</th>
             </tr>
           </thead>
-
+          <tbody>
+            <tr>
+              <th>Humidity:</th>
+              <td id="maxHumid">Waiting...</td>
+            </tr>
+            <tr>
+              <th>Temperature:</th>
+              <td id="maxTemp">Waiting...</td>
+            </tr>
+            <tr>
+              <th>Start Press.:</th>
+              <td id="maxPress">Waiting...</td>
+            </tr>
+          </tbody>
+        </table>
+		  </div>
+	    <div class="data-mins">
+		    <p>Data Minimums</p>
+        <table class="table table-bordered table-sm">
+          <thead class="thead-light">
+            <tr>
+              <th>Data</th>
+              <th>Minimums</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Start Alt.:</th>
+              <td id="minAlti">Waiting...</td>
+            </tr>
+          </tbody>
+        </table>
+	      <table class="table table-bordered table-sm">
+          <thead class="thead-light">
+            <tr>
+              <th>Data</th>
+			        <th>Maximums</th>
+            </tr>
+          </thead>
           <tbody>
             <tr>
               <th>Humidity:</th>
@@ -190,68 +228,51 @@
             </tr>
           </tbody>
         </table>
-		</div>
-	  <div class="data-mins">
-		<p>Data Minimums</p>
-	  <table class="table table-bordered table-sm">
+		  </div>
+	    <div class="statuses">
+		    <p>Device Statuses</p>
+        <div class="status-table">
+        <p>Main Computer: <span class="disconnected">Disconnected</span></p>
+        <p>Camera 1: <span class="disconnected">Disconnected</span></p>
+        <p>Camera 2: <span class="disconnected">Disconnected</span></p>
+        </div>
+		  </div>
+      <div class="mission">
+        <div class="row">
+          <div class="col">
+            <p class="miss-display">Mission Status: <span class="stat-unknown">Unknown</span></p>
+          </div>
+          <div class="col">
+            <p class="miss-display">Mission Time: <span id="mission-timer">00:00</span></p>
+          </div>
+        </div>
+        <p>Mission Timeline</p>
+        <div class="mission-timeline">
+
+        </div>
+        <p>Recovery</p>
+        <table class="table table-bordered table-sm mt-3">
           <thead class="thead-light">
             <tr>
               <th>Data</th>
-			  <th>Minimum</th>
+              <th>Latitude</th>
+              <th>Longitude</th>
             </tr>
           </thead>
-
           <tbody>
             <tr>
-              <th>Humidity:</th>
-              <td id="humidity1">Waiting...</td>
+              <th>Start Location</th>
+              <td id="firstLat">Waiting...</td>
+              <td id="firstLon">Waiting...</td>
             </tr>
             <tr>
-              <th>Temperature:</th>
-              <td id="temperature1">Waiting...</td>
-            </tr>
-            <tr>
-              <th>Pressure:</th>
-              <td id="pressure1">Waiting...</td>
-            </tr>
-            <tr>
-              <th>Altitude:</th>
-              <td id="altitude1">Waiting...</td>
+              <th>Last Known</th>
+              <td id="recentLat">Waiting...</td>
+              <td id="recentLon">Waiting...</td>
             </tr>
           </tbody>
         </table>
-		</div>
-		
-	 <div class="statuses">
-		<p>Data Minimums</p>
-	  <table class="table table-bordered table-sm">
-          <thead class="thead-light">
-            <tr>
-              <th>Data</th>
-			  <th>Minimum</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr>
-              <th>Humidity:</th>
-              <td id="humidity1">Waiting...</td>
-            </tr>
-            <tr>
-              <th>Temperature:</th>
-              <td id="temperature1">Waiting...</td>
-            </tr>
-            <tr>
-              <th>Pressure:</th>
-              <td id="pressure1">Waiting...</td>
-            </tr>
-            <tr>
-              <th>Altitude:</th>
-              <td id="altitude1">Waiting...</td>
-            </tr>
-          </tbody>
-        </table>
-		</div>
+      </div>
     </div>
 
     <!-- Local Scripts -->
