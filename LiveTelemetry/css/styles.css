@@ -10,7 +10,7 @@ body {
   font-family: Arial, sans-serif;
   background-color: #ffffff;
   color: #333;
-}
+} 
 
 .app-header {
   background-color: #2b442d;
@@ -147,4 +147,19 @@ body {
 }
 .mission span.stat-nominal {
   color: lime;
+}
+.mission-timeline {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  height: 100px;
+  margin-bottom: 10px;
+}
+
+footer {
+  margin-top: 100px;
+  background-color: #1c2e0a;
+  height: 100px;
+  color: white;
+  padding-top: 38px;
+  padding-left: 33%;
 }
