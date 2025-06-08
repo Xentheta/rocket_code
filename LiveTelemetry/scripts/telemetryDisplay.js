@@ -1,4 +1,3 @@
-
 var socket = io("http://localhost:3000");
 
 //#######################
@@ -29,6 +28,19 @@ let currentAccelX = null;
 let currentAccelY = null;
 let currentAccelZ = null;
 let totalAccel = null;
+
+// IMU Variables
+
+// Calculated Variables
+let currentfirstLat = null, currentlastLat = null;
+let currentfirstLon = null, currentlastLon = null;
+let currentApogee = null;
+let currentmaxAccel = null;
+let currentminAlt = null;
+let currentmaxHumid = null, currentminHumid = null; 
+let currentmaxTemp = null, currentminTemp = null; 
+let currentmaxPress = null, currentminPress = null; 
+
 
 // Frontend
 let map;
@@ -73,7 +85,16 @@ socket.on("latitude", function (latitude) {
     old_lat = currentLatitude;
   }
 });
+socket.on("firstLat", function (firstLat) {
+  currentfirstLat = parseFloat(firstLat);
+  document.getElementById("firstLat").textContent = currentfirstLat;
 
+});
+socket.on("lastLat", function (lastLat) {
+  currentfirstLat = parseFloat(lastLat);
+  document.getElementById("lastLat").textContent = currentlastLat;
+
+});
 socket.on("longitude", function (longitude) {
   currentLongitude = parseFloat(longitude);
   document.getElementById("longitude").textContent = currentLongitude;
@@ -82,6 +103,16 @@ socket.on("longitude", function (longitude) {
     changeLocation(currentLatitude || old_lat, currentLongitude);
     old_long = currentLongitude;
   }
+});
+socket.on("firstLon", function (firstLon) {
+  currentfirstLat = parseFloat(firstLon);
+  document.getElementById("firstLon").textContent = currentfirstLon;
+
+});
+socket.on("lastLon", function (lastLon) {
+  currentfirstLat = parseFloat(lastLon);
+  document.getElementById("lastLon").textContent = currentlastLon;
+
 });
 
 // Altimeter1 Data
@@ -153,6 +184,24 @@ socket.on("accelZ", function (accelerationZ) {
 socket.on("totalAccel", function (totalAccel) {
   currentTotalAcc = parseFloat(totalAccel);
   document.getElementById("totalAccel").textContent = currentTotalAcc;
+});
+
+// Calculated Data
+socket.on("apogee", function (apogee) {
+  currentApogee = parseFloat(apogee);
+  document.getElementById("apogee").textContent = currentApogee;
+});
+socket.on("maxHumid", function (maxHumid) {
+  currentmaxHumid = parseFloat(maxHumid);
+  document.getElementById("maxHumid").textContent = currentmaxHumid;
+});
+socket.on("maxTemp", function (maxTemp) {
+  currentmaxTemp = parseFloat(maxTemp);
+  document.getElementById("maxTemp").textContent = currentmaxTemp;
+});
+socket.on("maxPress", function (maxPress) {
+  currentmaxHumid = parseFloat(maxPress);
+  document.getElementById("maxPress").textContent = currentmaxPress;
 });
 
 //calculate total acceleration 
