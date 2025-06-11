@@ -11,6 +11,7 @@ let currentLatitude = null;
 let currentLongitude = null;
 let old_lat = null;
 let old_long = null;
+let currentGNSSalti = null;
 
 // Altimeter Variables
 let currentHumidity1 = null;
@@ -27,9 +28,11 @@ let currentAltitude2 = null;
 let currentAccelX = null;
 let currentAccelY = null;
 let currentAccelZ = null;
-let totalAccel = null;
 
 // IMU Variables
+let currentGyroX = null;
+let currentGyroY = null;
+let currentGyroZ = null;
 
 // Calculated Variables
 let currentfirstLat = null, currentlastLat = null;
@@ -37,10 +40,9 @@ let currentfirstLon = null, currentlastLon = null;
 let currentApogee = null;
 let currentmaxAccel = null;
 let currentminAlt = null;
-let currentmaxHumid = null, currentminHumid = null; 
+let currentmaxHum = null, currentminHum = null; 
 let currentmaxTemp = null, currentminTemp = null; 
 let currentmaxPress = null, currentminPress = null; 
-
 
 // Frontend
 let map;
@@ -114,6 +116,10 @@ socket.on("lastLon", function (lastLon) {
   document.getElementById("lastLon").textContent = currentlastLon;
 
 });
+socket.on("altiGNSS", function (altiGNSS) {
+  currentGNSSalti = parseFloat(altiGNSS);
+  document.getElementById("lastAlti").textContent = currentGNSSalti;
+});
 
 // Altimeter1 Data
 socket.on("humidity1", function (humidity1) {
@@ -169,12 +175,10 @@ socket.on("altitude2", function (altitude2) {
 socket.on("accelX", function (accelerationX) {
   currentAccelX = parseFloat(accelerationX);
   document.getElementById("accelX").textContent = currentAccelX;
-  
 });
 socket.on("accelY", function (accelerationY) {
   currentAccelY = parseFloat(accelerationY);
   document.getElementById("accelY").textContent = currentAccelY;
-  
 });
 socket.on("accelZ", function (accelerationZ) {
   currentAccelZ = parseFloat(accelerationZ);
@@ -186,14 +190,34 @@ socket.on("totalAccel", function (totalAccel) {
   document.getElementById("totalAccel").textContent = currentTotalAcc;
 });
 
+// IMU Data
+socket.on("gyroX", function (gyroX) {
+  currentGyroX = parseFloat(gyroX);
+  document.getElementById("gyroX").textContent = currentGyroX;
+});
+socket.on("gyroY", function (gyroY) {
+  currentGyroY = parseFloat(gyroY);
+  document.getElementById("gyroY").textContent = currentGyroY;
+});
+socket.on("gyroZ", function (gyroZ) {
+  currentGyroZ = parseFloat(gyroZ);
+  document.getElementById("gyroZ").textContent = currentGyroZ;
+});
+
 // Calculated Data
+
+// Maxes
 socket.on("apogee", function (apogee) {
   currentApogee = parseFloat(apogee);
   document.getElementById("apogee").textContent = currentApogee;
 });
-socket.on("maxHumid", function (maxHumid) {
-  currentmaxHumid = parseFloat(maxHumid);
-  document.getElementById("maxHumid").textContent = currentmaxHumid;
+socket.on("maxAccel", function (maxAccel) {
+  currentmaxAccel = parseFloat(maxAccel);
+  document.getElementById("maxAccel").textContent = currentmaxAccel;
+});
+socket.on("maxHum", function (maxHum) {
+  currentmaxHum = parseFloat(maxHum);
+  document.getElementById("maxHum").textContent = currentmaxHum;
 });
 socket.on("maxTemp", function (maxTemp) {
   currentmaxTemp = parseFloat(maxTemp);
@@ -202,6 +226,24 @@ socket.on("maxTemp", function (maxTemp) {
 socket.on("maxPress", function (maxPress) {
   currentmaxHumid = parseFloat(maxPress);
   document.getElementById("maxPress").textContent = currentmaxPress;
+});
+
+// Mins
+socket.on("minAlt", function (minAlt) {
+  currentminAlt = parseFloat(minAlt);
+  document.getElementById("minAlt").textContent = currentminAlt;
+});
+socket.on("minHum", function (minHum) {
+  currentminHum = parseFloat(minHum);
+  document.getElementById("minHum").textContent = currentminHum;
+});
+socket.on("minTemp", function (minTemp) {
+  currentminTemp = parseFloat(minTemp);
+  document.getElementById("minTemp").textContent = currentminTemp;
+});
+socket.on("minPress", function (minPress) {
+  currentminHumid = parseFloat(minPress);
+  document.getElementById("minPress").textContent = currentminPress;
 });
 
 //calculate total acceleration 

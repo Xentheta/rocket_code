@@ -93,17 +93,17 @@
             <tr>
               <th>X:</th>
               <td id="accelX">Waiting...</td>
-              <td id="x-gyro">Waiting...</td>
+              <td id="gyroX">Waiting...</td>
             </tr>
             <tr>
               <th>Y:</th>
               <td id="accelY">Waiting...</td>
-              <td id="y-gyro">Waiting...</td>
+              <td id="gyroY">Waiting...</td>
             </tr>
             <tr>
               <th>Z:</th>
               <td id="accelZ">Waiting...</td>
-              <td id="z-gyro">Waiting...</td>
+              <td id="gyroZ">Waiting...</td>
             </tr>
             <tr>
               <th>Total:</th>
@@ -164,7 +164,7 @@
             </tr>
             <tr>
               <th>Acceleration:</th>
-              <td id="maxAccY">Waiting...</td>
+              <td id="maxAccel">Waiting...</td>
             </tr>
           </tbody>
         </table>
@@ -178,7 +178,7 @@
           <tbody>
             <tr>
               <th>Humidity:</th>
-              <td id="maxHumid">Waiting...</td>
+              <td id="maxHum">Waiting...</td>
             </tr>
             <tr>
               <th>Temperature:</th>
@@ -203,7 +203,7 @@
           <tbody>
             <tr>
               <th>Start Alt.:</th>
-              <td id="minAlti">Waiting...</td>
+              <td id="minAlt">Waiting...</td>
             </tr>
           </tbody>
         </table>
@@ -217,7 +217,7 @@
           <tbody>
             <tr>
               <th>Humidity:</th>
-              <td id="minHumid">Waiting...</td>
+              <td id="minHum">Waiting...</td>
             </tr>
             <tr>
               <th>Temperature:</th>
@@ -233,18 +233,18 @@
 	    <div class="statuses">
 		    <p>Device Statuses</p>
         <div class="status-table">
-        <p>Main Computer: <span class="disconnected">Disconnected</span></p>
-        <p>Camera 1: <span class="disconnected">Disconnected</span></p>
-        <p>Camera 2: <span class="disconnected">Disconnected</span></p>
+        <p>Main Computer: <span class="disconnected" id="MCUstatus">Disconnected</span></p>
+        <p>Camera 1: <span class="disconnected" id="cam1status">Disconnected</span></p>
+        <p>Camera 2: <span class="disconnected" id="cam2status">Disconnected</span></p>
         </div>
 		  </div>
       <div class="mission">
         <div class="row">
           <div class="col">
-            <p class="miss-display">Mission Status: <span class="stat-unknown">Unknown</span></p>
+            <p class="miss-display">Mission Status: <span class="stat-unknown" id="missStatus">Unknown</span></p>
           </div>
           <div class="col">
-            <p class="miss-display">Mission Time: <span id="mission-timer">00:00</span></p>
+            <p class="miss-display">Mission Time: <span id="mission-timer">00:00:000</span></p>
           </div>
         </div>
         <p>Mission Timeline</p>
@@ -258,6 +258,7 @@
               <th>Data</th>
               <th>Latitude</th>
               <th>Longitude</th>
+              <th>Altitude</th>
             </tr>
           </thead>
           <tbody>
@@ -270,6 +271,7 @@
               <th>Last Known</th>
               <td id="lastLat">Waiting...</td>
               <td id="lastLon">Waiting...</td>
+              <td id="lastAlti">Waiting...</td>
             </tr>
           </tbody>
         </table>
@@ -282,13 +284,14 @@
           <p>&copy; IGNITORS 2025</p>
         </div>
         <div class="col text-center">
-          <p>Version: Alpha 0.6</p>
+          <p>Version: Alpha 0.9</p>
         </div>
       </div>
     </footer>
 
     <!-- Local Scripts -->
     <script src="../scripts/telemetryDisplay.js"></script>
+    <script src="../scripts/missionDisplay.js"></script>
     <script src="../js/jquery-3.4.1.min.js"></script>
     <script src="../js/popper.min.js"></script>
     <script src="../js/bootstrap-4.4.1.js"></script>

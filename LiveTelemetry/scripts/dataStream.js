@@ -1,6 +1,24 @@
 const { SerialPort } = require("serialport");  // Import SerialPort correctly
 const http = require("http");
 const socketIo = require("socket.io");
+const fs = require("fs");
+const path = require("path");
+
+// CSV File setup
+const csvFilePath = path.join(__dirname, "sensor_data.csv");
+
+const csvHeaders = [
+  "timestamp",
+  "latitude", "longitude", "altitudeGNSS",
+  "humidity1", "temperature1", "pressure1", "altitude1",
+  "humidity2", "temperature2", "pressure2", "altitude2",
+  "accelX", "accelY", "accelZ", "totalAccel",
+  "gyroX", "gyroY", "gyroZ"
+];
+
+if (!fs.existsSync(csvFilePath)) {
+  fs.writeFileSync(csvFilePath, csvHeaders.join(",") + "\n", "utf8");
+}
 
 // Configure and open the serial port
 const port = new SerialPort({
@@ -37,6 +55,12 @@ const io = socketIo(app, {
   }
 }); 
 
+
+if (!fs.existsSync(csvFilePath)) {
+  fs.writeFileSync(csvFilePath, csvHeaders.join(",") + "\n", "utf8");
+}
+
+
 //###################################
 // Variables to store sensor readings
 //###################################
@@ -44,6 +68,7 @@ const io = socketIo(app, {
 // GPS variables
 let latitude = null, longitude = null;
 let oldLat = null, oldLon = null;
+let altitudeGNSS = null, oldAltG = null;
 
 // Altimeter variables
 let humidity1 = null , temperature1 = null, pressure1 = null, altitude1 = null;
@@ -56,9 +81,11 @@ let oldHmd2 = null, oldTmp2 = null, oldPrs2 = null, oldAlt2 = null;
 let accelerationX = null, accelerationY = null, accelerationZ = null;
 let oldAccX = null, oldAccY = null, oldAccZ = null;
 let totalAccel = null;
+let oldtotalAcc = null;
 
 // IMU variables
-
+let gyroX = null, gyroY = null, gyroZ = null;
+let oldgyroX = null, oldgyroY = null, oldgyroZ = null;
 
 // Calculated variables
 let maxAlt1 = null, maxAlt2 = null, apogee = null;
@@ -68,7 +95,11 @@ let maxHum2 = null, maxTemp2 = null, maxPress2 = null;
 let minHum1 = null, minTemp1 = null, minPress1 = null, minAlt1 = null; 
 let minHum2 = null, minTemp2 = null, minPress2 = null, minAlt2 = null; 
 let compmaxHum = null, compmaxTemp = null, compmaxPress = null;
+let compminHum = null, compminTemp = null, compminPress = null, compminAlt = null;
 let firstLat = null, firstLon = null;
+
+let MCUstatus = null;
+let missionStatus = null;
 
 // Function for handling signed values
 
@@ -79,9 +110,27 @@ function signedHex(hex, byteLength) {
   return (val >= limit) ? val - max : val;
 }
 
+// CSV handling
+
+function logSensorData() {
+  const now = new Date().toISOString();
+  const row = [
+    now,
+    latitude, longitude, altitudeGNSS,
+    humidity1, temperature1, pressure1, altitude1,
+    humidity2, temperature2, pressure2, altitude2,
+    accelerationX, accelerationY, accelerationZ, totalAccel,
+    gyroX, gyroY, gyroZ
+  ];
+
+  const safeRow = row.map(val => (val === null || val === undefined) ? "" : val);
+  fs.appendFile(csvFilePath, safeRow.join(",") + "\n", (err) => {
+    if (err) console.error("CSV Write Error:", err);
+  });
+}
+
 io.on("connection", (socket) => {
   console.log("Client connected to socket.io");
-
   port.on("data", (data) => {
 
     let hexData = (data.toString('hex')).toUpperCase();
@@ -92,6 +141,7 @@ io.on("connection", (socket) => {
     // Latitude and longitude identifiers
     const LatPrefix = "4C61743A";
     const LonPrefix = "4C6F6E3A";
+    const altiGPrefix = "416C74473A";
 
     // Altimeter 1 identifiers
     const humid1Prefix = "48756D313A"; 
@@ -110,6 +160,19 @@ io.on("connection", (socket) => {
     const accelYPrefix = "416363593A";
     const accelZPrefix = "4163635A3A";
 
+    // Gyroscope prefixes
+    const gyroXPrefix = "726F74583A";
+    const gyroYPrefix = "726F74593A";
+    const gyroZPrefix = "726F745A3A";
+
+    // Send status update
+    if (hexData !== null) {
+      MCUstatus = "connected";
+      missionStatus = "issue";
+
+      socket.emit("MCUstatus", MCUstatus);
+      socket.emit("missionStatus", missionStatus);
+    }
     if (hexData.startsWith(LatPrefix)) {
       const rawLat = hexData.slice(LatPrefix.length, LatPrefix.length + 8);
       const lat = signedHex(rawLat, 4) / 10000000;
@@ -132,7 +195,18 @@ io.on("connection", (socket) => {
         console.log("Invalid longitude data:", hexData.toString());
       }
     } 
-    ////////////// Altimeter 1
+    else if (hexData.startsWith(altiGPrefix)) {
+      const rawAltG = hexData.slice(altiGPrefix.length, altiGPrefix.length + 8);
+      const altG = signedHex(rawAltG, 4) / 10000000;
+
+      if (!isNaN(altG)) {
+        console.log("GNSS altitude received:", altG);
+        longitude = altG;
+      } else {
+        console.log("Invalid GNSS altitude data:", hexData.toString());
+      }
+    } 
+    ////////////// Altimeter 1 /////////////
 
     // Humidity
     else if (hexData.startsWith(humid1Prefix)) {
@@ -179,7 +253,7 @@ io.on("connection", (socket) => {
       }
     }
 
-    /////////// Altimeter 2
+    /////////// Altimeter 2 ////////////
 
     // Humidity
     else if (hexData.startsWith(humid2Prefix)) {
@@ -260,7 +334,42 @@ io.on("connection", (socket) => {
         console.log("Invalid accelerationZ data:", hexData.toString());
       }
     } 
-  
+
+    // IMU Data
+    else if (hexData.startsWith(gyroXPrefix)) {
+      const rawGyroX = hexData.slice(gyroXPrefix.length, gyroXPrefix.length + 4);
+      const imuX = signedHex(rawGyroX, 2) / 1000;
+
+      if (!isNaN(imuX)) {
+        console.log("gyroscopeX received:", imuX);
+        gyroX = imuX;
+      } else {
+        console.log("Invalid gyroscopeX data:", hexData.toString());
+      }
+    }
+    else if (hexData.startsWith(gyroYPrefix)) {
+      const rawGyroY = hexData.slice(gyroYPrefix.length, gyroYPrefix.length + 4);
+      const imuY = signedHex(rawGyroY, 2) / 1000;
+
+      if (!isNaN(imuY)) {
+        console.log("gyroscopeY received:", imuY);
+        gyroY = imuY;
+      } else {
+        console.log("Invalid gyroscopeY data:", hexData.toString());
+      }
+    }
+    else if (hexData.startsWith(gyroZPrefix)) {
+      const rawGyroZ = hexData.slice(gyroZPrefix.length, gyroZPrefix.length + 4);
+      const imuZ = signedHex(rawGyroZ, 2) / 1000;
+
+      if (!isNaN(imuZ)) {
+        console.log("gyroscopeZ received:", imuZ);
+        gyroZ = imuZ;
+      } else {
+        console.log("Invalid gyroscopeZ data:", hexData.toString());
+      }
+    }
+
     // If both latitude and longitude are available, emit them to the client
     if ((latitude !== null) && (oldLat == null)) {
       console.log("Sending latitude to client.");
@@ -300,6 +409,17 @@ io.on("connection", (socket) => {
       console.log("Sending last longitude to client.");
       socket.emit("lastLon", oldLon); 
     }
+    if ((altitudeGNSS !== null) && (oldAltG == null)) {
+      console.log("Sending GNSS altitude to client.");
+      socket.emit("altiGNSS", altitudeGNSS);
+
+      oldAltG = altitudeGNSS;
+    } else if ((altitudeGNSS !== null) && ((altitudeGNSS <= (oldAltG + 300)) && (altitudeGNSS >= (oldAltG - 300)))) {
+      console.log("Sending GNSS altitude to client.");
+      socket.emit("altiGNSS", altitudeGNSS);
+
+      oldAltG = altitudeGNSS;     
+    }
 
     // If altimeter 1 data is available, emit it to the client
     if ((humidity1 !== null) && (oldHmd1 == null)) {
@@ -308,13 +428,15 @@ io.on("connection", (socket) => {
 
       // Store old humidity1
       oldHmd1 = humidity1;
-
+      minHum1 = humidity1;
     } else if ((humidity1 !== null) && ((humidity1 <= (oldHmd1 + 10)) && (humidity1 >= (oldHmd1 - 10)))) {
       console.log("Sending humidity1 to client.");
       socket.emit("humidity1", humidity1);
 
+      if (humidity1 > oldHmd1) {
+        maxHum1 = humidity1;
+      }
       oldHmd1 = humidity1;
-
     }
     if ((temperature1 !== null) && (oldTmp1 == null)) {
       console.log("Sending temperature1 to client.");
@@ -326,7 +448,10 @@ io.on("connection", (socket) => {
     } else if ((temperature1 !== null) && ((temperature1 <= (oldTmp1 + 5)) && (temperature1 >= (oldTmp1 - 5)))) {
       console.log("Sending temperature1 to client.");
       socket.emit("temperature1", temperature1);
-
+      
+      if (temperature1 < oldTmp1) {
+        minTemp1 = temperature1;
+      }
       oldTmp1 = temperature1;
     }
     if ((pressure1 !== null) && (oldPrs1 == null)) {
@@ -341,6 +466,9 @@ io.on("connection", (socket) => {
       console.log("Sending pressure1 to client.");
       socket.emit("pressure1", pressure1); 
 
+      if (pressure1 < oldPrs1) {
+        minPress1 = pressure1;
+      }
       oldPrs1 = pressure1;
     }
     if ((altitude1 !== null) && (oldAlt1 == null)) {
@@ -353,7 +481,10 @@ io.on("connection", (socket) => {
     } else if ((altitude1 !== null) && ((altitude1 <= (oldAlt1 + 300)) && (altitude1 >= (oldAlt1 - 300)))) {
       console.log("Sending altitude1 to client.");
       socket.emit("altitude1", altitude1);
-
+      
+      if (altitude1 > oldAlt1) {
+        maxAlt1 = altitude1 - minAlt1;
+      }
       oldAlt1 = altitude1;
     }
 
@@ -364,11 +495,15 @@ io.on("connection", (socket) => {
 
       // Store old humidity2
       oldHmd2 = humidity2;
+      minHum2 = humidity2;
     } else if ((humidity2 !== null) && ((humidity2 <= (oldHmd2 + 10)) && (humidity2 >= (oldHmd2 - 10)))) {
       console.log("Sending humidity2 to client.");
       socket.emit("humidity2", humidity2);
-
-      oldHmd1 = humidity1;
+      
+      if (humidity2 > oldHmd2) {
+        maxHum2 = humidity2;
+      }
+      oldHmd2 = humidity2;
     }
     if ((temperature2 !== null) && (oldTmp2 == null)) {
       console.log("Sending temperature2 to client.");
@@ -381,6 +516,9 @@ io.on("connection", (socket) => {
       console.log("Sending temperature2 to client.");
       socket.emit("temperature2", temperature2);
 
+      if (temperature2 < oldTmp2) {
+        minTemp2 = temperature2;
+      }
       oldTmp2 = temperature2;
     }
     if ((pressure2 !== null) && (oldPrs2 == null)) {
@@ -394,6 +532,9 @@ io.on("connection", (socket) => {
       console.log("Sending pressure2 to client.");
       socket.emit("pressure2", pressure2); 
 
+      if (pressure2 < oldPrs2) {
+        minPress2 = pressure2;
+      }
       oldPrs2 = pressure2;
     }
     if ((altitude2 !== null) && (oldAlt2 == null)) {
@@ -407,6 +548,9 @@ io.on("connection", (socket) => {
       console.log("Sending altitude2 to client.");
       socket.emit("altitude2", altitude2);
 
+      if (altitude2 > oldAlt2) {
+        maxAlt2 = altitude2 - minAlt2;
+      }
       oldAlt2 = altitude2;
     }
 
@@ -447,13 +591,77 @@ io.on("connection", (socket) => {
 
       oldAccZ = accelerationZ;
     }
-    if (oldAccX != null && oldAccY != null && oldAccZ != null) {
+    if ((oldAccX !== null && oldAccY !== null && oldAccZ !== null) && oldtotalAcc == null) {
       totalAccel = Math.round(Math.sqrt((oldAccX**2) + (oldAccY ** 2) + (oldAccZ ** 2)) * 1000) / 1000;
       console.log("Sending total acceleration to client.");
       socket.emit("totalAccel", totalAccel);
+      oldtotalAcc = totalAccel;
+    } else {
+      totalAccel = Math.round(Math.sqrt((oldAccX**2) + (oldAccY ** 2) + (oldAccZ ** 2)) * 1000) / 1000;
+      console.log("Sending total acceleration to client.");
+      socket.emit("totalAccel", totalAccel);
+      if (totalAccel < oldtotalAcc) {
+        maxAccel = totalAccel;
+      }
+      oldtotalAcc = totalAccel;
     }
+
+
+    // If IMU data is available, emit to client
+    if ((gyroX !== null) && (oldgyroX == null)) {
+      console.log("Sending gyroscope X to client.");
+      socket.emit("gyroX", gyroX);
+
+      // Store old gyroX
+      oldgyroX = gyroX;
+    } else if ((gyroX !== null) && ((gyroX <= (oldgyroX + 5)) && (gyroX >= (oldgyroX - 5)))) {
+      console.log("Sending gyroscope X to client.");
+      socket.emit("gyroX", gyroX);
+
+      oldgyroX = gyroX;
+    }
+    if ((gyroY !== null) && (oldgyroY == null)) {
+      console.log("Sending gyroscope Y to client.");
+      socket.emit("gyroY", gyroY);
+
+      // Store old gyroY
+      oldgyroY = gyroY;
+    } else if ((gyroY !== null) && ((gyroY <= (oldgyroY + 5)) && (gyroY >= (oldgyroY - 5)))) {
+      console.log("Sending gyroscope Y to client.");
+      socket.emit("gyroY", gyroY);
+
+      oldgyroY = gyroY;
+    }
+    if ((gyroZ !== null) && (oldgyroZ == null)) {
+      console.log("Sending gyroscope Z to client.");
+      socket.emit("gyroZ", gyroZ);
+
+      // Store old gyroZ
+      oldgyroZ = gyroZ;
+    } else if ((gyroZ !== null) && ((gyroZ <= (oldgyroZ + 5)) && (gyroZ >= (oldgyroZ - 5)))) {
+      console.log("Sending gyroscope Z to client.");
+      socket.emit("gyroZ", gyroZ);
+
+      oldgyroZ = gyroZ;
+    }   
     
     // Calculated values
+
+    // Maxes
+    if ((maxAlt1 !== null) && (maxAlt2 !== null)) {
+      apogee = (maxAlt1 + maxAlt2) / 2;
+      console.log("Sending apogee to client");
+      socket.emit("apogee", apogee);
+    }
+    if (maxAccel !== null) {
+      console.log("Sending max acceleration to client");
+      socket.emit("maxAccel", maxAccel);
+    }
+    if ((maxHum1 !== null) && (maxHum2 !== null)) {
+      compmaxHum = (maxHum1 + maxHum2) / 2;
+      console.log("Sending max humidity to client");
+      socket.emit("maxHum", compmaxHum);
+    }
     if ((maxTemp1 !== null) && (maxTemp2 !== null)) {
       compmaxTemp = (maxTemp1 + maxTemp2) / 2;
       console.log("Sending max temperature to client");
@@ -465,6 +673,27 @@ io.on("connection", (socket) => {
       socket.emit("maxPress", compmaxPress);
     }
 
+    // Minimums
+    if ((minAlt1 !== null) && (minAlt2 !== null)) {
+      compminAlt = (minAlt1 +_minAlt2) / 2;
+      console.log("Sending min altitude to client");
+      socket.emit("minAlt", compminAlt);
+    }
+    if ((minHum1 !== null) && (minHum2 !== null)) {
+      compminHum = (minHum1 + minHum2) / 2;
+      console.log("Sending min humidity to client");
+      socket.emit("minHum", compminHum);
+    }
+    if ((minTemp1 !== null) && (minTemp2 !== null)) {
+      compmaxTemp = (minTemp1 + minTemp2) / 2;
+      console.log("Sending min temperature to client");
+      socket.emit("minTemp", compminTemp);
+    }
+    if ((minPress1 !== null) && (minPress2 !== null)) {
+      compminPress = (minPress1 + minPress2) / 2;
+      console.log("Sending min pressure to client");
+      socket.emit("minPress", compminPress);
+    }
   });
 
   // Handle socket disconnect event
