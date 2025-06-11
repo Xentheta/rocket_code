@@ -16,7 +16,7 @@ function formatTime(ms) {
     const milliseconds = String(ms % 1000).padStart(3, '0');
     return `${minutes}:${seconds}:${milliseconds}`;
 }
-function timeStart() {
+function timerStart() {
     startTime = Date.now();
     intervalId = setInterval(() => {
         const elapsed = Date.now() - startTime;

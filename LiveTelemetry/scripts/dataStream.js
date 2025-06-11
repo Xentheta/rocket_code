@@ -101,6 +101,9 @@ let firstLat = null, firstLon = null;
 let MCUstatus = null;
 let missionStatus = null;
 
+// Mass sensor status check
+let gnssStat = false, alti1stat = false, alti2stat = false, accStat = false, IMUstat = true;
+
 // Function for handling signed values
 
 function signedHex(hex, byteLength) {
@@ -166,7 +169,7 @@ io.on("connection", (socket) => {
     const gyroZPrefix = "726F745A3A";
 
     // Send status update
-    if (hexData !== null) {
+    if ((hexData !== null)) {
       MCUstatus = "connected";
       missionStatus = "issue";
 
@@ -368,7 +371,7 @@ io.on("connection", (socket) => {
       } else {
         console.log("Invalid gyroscopeZ data:", hexData.toString());
       }
-    }
+    } 
 
     // If both latitude and longitude are available, emit them to the client
     if ((latitude !== null) && (oldLat == null)) {
@@ -382,7 +385,7 @@ io.on("connection", (socket) => {
       socket.emit("firstLat", firstLat); 
       console.log("Sending last latitude to client.");
       socket.emit("lastLat", oldLat); 
-    } else if ((latitude !== null) && ((latitude <= (oldLat + 0.003)) && (latitude >= (oldLat - 0.003)))) {
+    } else if ((latitude !== null) && ((latitude <= (oldLat + 0.03)) && (latitude >= (oldLat - 0.03)))) {
       console.log("Sending latitude to client.");
       socket.emit("latitude", latitude);
 
@@ -401,7 +404,7 @@ io.on("connection", (socket) => {
       socket.emit("firstLon", firstLon);
       console.log("Sending last longitude to client.");
       socket.emit("lastLon", oldLon); 
-    } else if ((longitude !== null) && ((longitude <= (oldLon + 0.003)) && (longitude >= (oldLon - 0.003)))) {
+    } else if ((longitude !== null) && ((longitude <= (oldLon + 0.03)) && (longitude >= (oldLon - 0.03)))) {
       console.log("Sending longitude to client.");
       socket.emit("longitude", longitude);
 
@@ -414,11 +417,14 @@ io.on("connection", (socket) => {
       socket.emit("altiGNSS", altitudeGNSS);
 
       oldAltG = altitudeGNSS;
-    } else if ((altitudeGNSS !== null) && ((altitudeGNSS <= (oldAltG + 300)) && (altitudeGNSS >= (oldAltG - 300)))) {
+    } else if ((altitudeGNSS !== null) && ((altitudeGNSS <= (oldAltG + 10000)) && (altitudeGNSS >= (oldAltG - 10000)))) {
       console.log("Sending GNSS altitude to client.");
       socket.emit("altiGNSS", altitudeGNSS);
 
       oldAltG = altitudeGNSS;     
+    }
+    if ((oldLat !== null) && (oldLon !== null)) {
+      gnssStat = true;
     }
 
     // If altimeter 1 data is available, emit it to the client
@@ -429,7 +435,7 @@ io.on("connection", (socket) => {
       // Store old humidity1
       oldHmd1 = humidity1;
       minHum1 = humidity1;
-    } else if ((humidity1 !== null) && ((humidity1 <= (oldHmd1 + 10)) && (humidity1 >= (oldHmd1 - 10)))) {
+    } else if ((humidity1 !== null) && ((humidity1 <= (oldHmd1 + 100)) && (humidity1 >= (oldHmd1 - 100)))) {
       console.log("Sending humidity1 to client.");
       socket.emit("humidity1", humidity1);
 
@@ -445,7 +451,7 @@ io.on("connection", (socket) => {
       // Store old temperature1
       oldTmp1 = temperature1;
       maxTemp1 = temperature1; 
-    } else if ((temperature1 !== null) && ((temperature1 <= (oldTmp1 + 5)) && (temperature1 >= (oldTmp1 - 5)))) {
+    } else if ((temperature1 !== null) && ((temperature1 <= (oldTmp1 + 500)) && (temperature1 >= (oldTmp1 - 500)))) {
       console.log("Sending temperature1 to client.");
       socket.emit("temperature1", temperature1);
       
@@ -462,7 +468,7 @@ io.on("connection", (socket) => {
       oldPrs1 = pressure1;
       maxPress1 = pressure1;
 
-    } else if ((pressure1 !== null) && ((pressure1 <= (oldPrs1 + 2000)) && (pressure1 >= (oldPrs1 - 2000)))) {
+    } else if ((pressure1 !== null) && ((pressure1 <= (oldPrs1 + 20000)) && (pressure1 >= (oldPrs1 - 20000)))) {
       console.log("Sending pressure1 to client.");
       socket.emit("pressure1", pressure1); 
 
@@ -478,14 +484,20 @@ io.on("connection", (socket) => {
       // Store old altitude1
       oldAlt1 = altitude1;
       minAlt1 = altitude1;
-    } else if ((altitude1 !== null) && ((altitude1 <= (oldAlt1 + 300)) && (altitude1 >= (oldAlt1 - 300)))) {
+    } else if ((altitude1 !== null) && ((altitude1 <= (oldAlt1 + 10000)) && (altitude1 >= (oldAlt1 - 10000)))) {
       console.log("Sending altitude1 to client.");
       socket.emit("altitude1", altitude1);
       
-      if (altitude1 > oldAlt1) {
+      if ((altitude1 > oldAlt1) && (apogee == null)) {
+        maxAlt1 = altitude1 - minAlt1;
+      } 
+      else if (altitude1 > apogee) {
         maxAlt1 = altitude1 - minAlt1;
       }
       oldAlt1 = altitude1;
+    }
+    if ((oldHmd1 !== null) && (oldTmp1 !== null) && (oldPrs1 !== null) && (oldAlt1 !== null)) {
+      alti1stat = true;
     }
 
     // If altimeter 2 data is available, emit it to the client
@@ -496,7 +508,7 @@ io.on("connection", (socket) => {
       // Store old humidity2
       oldHmd2 = humidity2;
       minHum2 = humidity2;
-    } else if ((humidity2 !== null) && ((humidity2 <= (oldHmd2 + 10)) && (humidity2 >= (oldHmd2 - 10)))) {
+    } else if ((humidity2 !== null) && ((humidity2 <= (oldHmd2 + 100)) && (humidity2 >= (oldHmd2 - 100)))) {
       console.log("Sending humidity2 to client.");
       socket.emit("humidity2", humidity2);
       
@@ -512,7 +524,7 @@ io.on("connection", (socket) => {
       // Store old temperature2
       oldTmp2 = temperature2;
       maxTemp2 = temperature2; 
-    } else if ((temperature2 !== null) && ((temperature2 <= (oldTmp2 + 5)) && (temperature2 >= (oldTmp2 - 5)))) {
+    } else if ((temperature2 !== null) && ((temperature2 <= (oldTmp2 + 500)) && (temperature2 >= (oldTmp2 - 500)))) {
       console.log("Sending temperature2 to client.");
       socket.emit("temperature2", temperature2);
 
@@ -528,7 +540,7 @@ io.on("connection", (socket) => {
       // Store old pressure2
       oldPrs2 = pressure2;
       maxPress2 = pressure2; 
-    } else if ((pressure2 !== null) && ((pressure2 <= (oldPrs2 + 2000)) && (pressure2 >= (oldPrs2 - 2000)))) {
+    } else if ((pressure2 !== null) && ((pressure2 <= (oldPrs2 + 20000)) && (pressure2 >= (oldPrs2 - 20000)))) {
       console.log("Sending pressure2 to client.");
       socket.emit("pressure2", pressure2); 
 
@@ -544,14 +556,19 @@ io.on("connection", (socket) => {
       // Store old altitude2
       oldAlt2 = altitude2;
       minAlt2 = altitude2; 
-    } else if ((altitude2 !== null) && ((altitude2 <= (oldAlt2 + 300)) && (altitude2 >= (oldAlt2 - 300)))) {
+    } else if ((altitude2 !== null) && ((altitude2 <= (oldAlt2 + 10000)) && (altitude2 >= (oldAlt2 - 10000)))) {
       console.log("Sending altitude2 to client.");
       socket.emit("altitude2", altitude2);
 
-      if (altitude2 > oldAlt2) {
+      if ((altitude2 > oldAlt2) && (apogee == null)) {
+        maxAlt2 = altitude2 - minAlt2;
+      } 
+      else if (altitude2 > apogee) {
         maxAlt2 = altitude2 - minAlt2;
       }
-      oldAlt2 = altitude2;
+    }
+    if ((oldHmd2 !== null) && (oldTmp2 !== null) && (oldPrs2 !== null) && (oldAlt2 !== null)) {
+      alti2stat = true;
     }
 
     // If accelerometer data is available, emit it to the client
@@ -561,7 +578,7 @@ io.on("connection", (socket) => {
 
       // Store old accelerationX
       oldAccX = accelerationX;
-    } else if ((accelerationX !== null) && ((accelerationX <= (oldAccX + 5)) && (accelerationX >= (oldAccX - 5)))) {
+    } else if ((accelerationX !== null) && ((accelerationX <= (oldAccX + 20)) && (accelerationX >= (oldAccX - 20)))) {
       console.log("Sending acceleration X to client.");
       socket.emit("accelX", accelerationX);
 
@@ -573,7 +590,7 @@ io.on("connection", (socket) => {
 
       // Store old accelerationY
       oldAccY = accelerationY;
-    } else if ((accelerationY !== null) && ((accelerationY <= (oldAccY + 5)) && (accelerationY >= (oldAccY - 5)))) {
+    } else if ((accelerationY !== null) && ((accelerationY <= (oldAccY + 20)) && (accelerationY >= (oldAccY - 20)))) {
       console.log("Sending acceleration Y to client.");
       socket.emit("accelY", accelerationY);
 
@@ -585,12 +602,16 @@ io.on("connection", (socket) => {
 
       // Store old accelerationZ
       oldAccZ = accelerationZ;
-    } else if ((accelerationZ !== null) && ((accelerationZ <= (oldAccZ + 5)) && (accelerationZ >= (oldAccZ - 5)))) {
+    } else if ((accelerationZ !== null) && ((accelerationZ <= (oldAccZ + 20)) && (accelerationZ >= (oldAccZ - 20)))) {
       console.log("Sending acceleration Z to client.");
       socket.emit("accelZ", accelerationZ);
 
       oldAccZ = accelerationZ;
     }
+    if ((oldAccX !== null) && (oldAccY !== null) && (oldAccZ !== null)) {
+      accStat = true;
+    }
+
     if ((oldAccX !== null && oldAccY !== null && oldAccZ !== null) && oldtotalAcc == null) {
       totalAccel = Math.round(Math.sqrt((oldAccX**2) + (oldAccY ** 2) + (oldAccZ ** 2)) * 1000) / 1000;
       console.log("Sending total acceleration to client.");
@@ -605,7 +626,6 @@ io.on("connection", (socket) => {
       }
       oldtotalAcc = totalAccel;
     }
-
 
     // If IMU data is available, emit to client
     if ((gyroX !== null) && (oldgyroX == null)) {
@@ -643,13 +663,21 @@ io.on("connection", (socket) => {
       socket.emit("gyroZ", gyroZ);
 
       oldgyroZ = gyroZ;
-    }   
+    }  
+
+    logSensorData();
     
+    // Update status to nominal
+    if ((gnssStat == true) && (alti1stat == true) && (alti2stat == true) && (accStat == true) && (IMUstat == true)) {
+      missionStatus = "nominal";
+      socket.emit("missionStatus", missionStatus);
+    }
+
     // Calculated values
 
     // Maxes
     if ((maxAlt1 !== null) && (maxAlt2 !== null)) {
-      apogee = (maxAlt1 + maxAlt2) / 2;
+      apogee = Math.round(((maxAlt1 + maxAlt2) / 2) * 1000) / 1000;
       console.log("Sending apogee to client");
       socket.emit("apogee", apogee);
     }
@@ -658,42 +686,43 @@ io.on("connection", (socket) => {
       socket.emit("maxAccel", maxAccel);
     }
     if ((maxHum1 !== null) && (maxHum2 !== null)) {
-      compmaxHum = (maxHum1 + maxHum2) / 2;
+      compmaxHum = Math.round(((maxHum1 + maxHum2) / 2) * 1000) / 1000;
       console.log("Sending max humidity to client");
       socket.emit("maxHum", compmaxHum);
     }
     if ((maxTemp1 !== null) && (maxTemp2 !== null)) {
-      compmaxTemp = (maxTemp1 + maxTemp2) / 2;
+      compmaxTemp = Math.round(((maxTemp1 + maxTemp2) / 2) * 1000) / 1000;
       console.log("Sending max temperature to client");
       socket.emit("maxTemp", compmaxTemp);
     }
     if ((maxPress1 !== null) && (maxPress2 !== null)) {
-      compmaxPress = (maxPress1 + maxPress2) / 2;
+      compmaxPress = Math.round(((maxPress1 + maxPress2) / 2) * 1000) / 1000;
       console.log("Sending max pressure to client");
       socket.emit("maxPress", compmaxPress);
     }
 
     // Minimums
     if ((minAlt1 !== null) && (minAlt2 !== null)) {
-      compminAlt = (minAlt1 +_minAlt2) / 2;
+      compminAlt = Math.round(((minAlt1 + minAlt2) / 2) * 1000) / 1000;
       console.log("Sending min altitude to client");
       socket.emit("minAlt", compminAlt);
     }
     if ((minHum1 !== null) && (minHum2 !== null)) {
-      compminHum = (minHum1 + minHum2) / 2;
+      compminHum = Math.round(((minHum1 + minHum2) / 2) * 1000) / 1000;
       console.log("Sending min humidity to client");
       socket.emit("minHum", compminHum);
     }
     if ((minTemp1 !== null) && (minTemp2 !== null)) {
-      compmaxTemp = (minTemp1 + minTemp2) / 2;
+      compmaxTemp = Math.round(((minTemp1 + minTemp2) / 2) * 1000) / 1000;
       console.log("Sending min temperature to client");
       socket.emit("minTemp", compminTemp);
     }
     if ((minPress1 !== null) && (minPress2 !== null)) {
-      compminPress = (minPress1 + minPress2) / 2;
+      compminPress = Math.round(((minPress1 + minPress2) / 2) * 1000) / 1000;
       console.log("Sending min pressure to client");
       socket.emit("minPress", compminPress);
     }
+
   });
 
   // Handle socket disconnect event

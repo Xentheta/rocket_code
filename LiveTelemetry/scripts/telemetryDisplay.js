@@ -87,16 +87,6 @@ socket.on("latitude", function (latitude) {
     old_lat = currentLatitude;
   }
 });
-socket.on("firstLat", function (firstLat) {
-  currentfirstLat = parseFloat(firstLat);
-  document.getElementById("firstLat").textContent = currentfirstLat;
-
-});
-socket.on("lastLat", function (lastLat) {
-  currentfirstLat = parseFloat(lastLat);
-  document.getElementById("lastLat").textContent = currentlastLat;
-
-});
 socket.on("longitude", function (longitude) {
   currentLongitude = parseFloat(longitude);
   document.getElementById("longitude").textContent = currentLongitude;
@@ -105,6 +95,15 @@ socket.on("longitude", function (longitude) {
     changeLocation(currentLatitude || old_lat, currentLongitude);
     old_long = currentLongitude;
   }
+});
+socket.on("firstLat", function (firstLat) {
+  currentfirstLat = parseFloat(firstLat);
+  document.getElementById("firstLat").textContent = currentfirstLat;
+
+});
+socket.on("lastLat", function (lastLat) {
+  currentfirstLat = parseFloat(lastLat);
+  document.getElementById("lastLat").textContent = currentlastLat;
 });
 socket.on("firstLon", function (firstLon) {
   currentfirstLat = parseFloat(firstLon);
